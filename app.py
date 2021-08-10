@@ -71,7 +71,7 @@ def upload_file():
 
       files = request.files.getlist('files[]')
 
-      if len(files)>0:
+      if len(files)>9:
          hash_set=[]
          for file in files:
             if file and allowed_file(file.filename):

@@ -18,7 +18,7 @@ def convert(hash_set):
       base=copy.deepcopy(root)
       base['k']["int"]=uid
       base['v']['string']=hash
-      metadata['20001']['map'].append(base)
+      metadata['30001']['map'].append(base)
 
     c= open('uid_count.txt','w')
     c.write(str(uid))
