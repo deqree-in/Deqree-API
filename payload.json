@@ -1,0 +1,21 @@
+{
+  "passphrase": "<placeholder>",
+  "payments": [
+    {
+      "address": "addr_test1qzfdaca335zyrrvhqtgywdrjg7q9u2zlu9cwemujwullaxm4q5a4dgseqzp9gpvhem2c350uehpxvpzkrnv6zpxxkkhqyzyeqh",
+      "amount": {
+        "quantity": 2000000,
+        "unit": "lovelace"
+      },
+      "assets": [
+        {
+          "policy_id": "fb807128dd4c887cb6c36b4862a56385319ecd59d96bbc4f59022f58",
+          "asset_name": "72756d636f696e",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "withdrawal": "self",
+  "metadata": { }
+}
