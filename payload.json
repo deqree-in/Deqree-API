@@ -7,13 +7,7 @@
         "quantity": 2000000,
         "unit": "lovelace"
       },
-      "assets": [
-        {
-          "policy_id": "fb807128dd4c887cb6c36b4862a56385319ecd59d96bbc4f59022f58",
-          "asset_name": "72756d636f696e",
-          "quantity": 1
-        }
-      ]
+      "assets": [   ]
     }
   ],
   "withdrawal": "self",
