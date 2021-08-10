@@ -6,8 +6,9 @@ def get_info(value):
 
     param={'order':'desc','count':None}
     token={'project_id': project_id}
+    label=30001
 
-    r=requests.get("https://cardano-testnet.blockfrost.io/api/v0/metadata/txs/labels/20001", headers=token, params=param)
+    r=requests.get(f"https://cardano-testnet.blockfrost.io/api/v0/metadata/txs/labels/{label}", headers=token, params=param)
 
     j=json.loads(r.text)
     n=len(j)
