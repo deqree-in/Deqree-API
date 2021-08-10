@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, flash
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from blockf import get_info
 import os
@@ -17,6 +18,7 @@ def sha256(filename):
     return sha256.hexdigest()
 
 app = Flask(__name__)
+CORS(app)
 
 UPLOAD_FOLDER = 'uploader'
 ALLOWED_EXTENSIONS = {'pdf'}
