@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, flash
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from blockf import get_info
+from time import sleep
 import os
 import hashlib
 import tx_script as tx
@@ -79,21 +80,33 @@ def upload_file():
                file.save(os.path.join(app.config['UPLOAD_FOLDER']+'/issue', filename))
                hash_set.append(sha256(UPLOAD_FOLDER+'/issue/'+filename))
       else : return "Submit more than 10 files."
-      print(hash_set)
-      while len(hash_set)>0:
-         if len(hash_set)>100:
-            out=tx.tx_create(hash_set[:99])
-            if out==False:
-               return redirect('/invalid')
-            hash_set=hash_set[100:]
-         else:
-            out=tx.tx_create(hash_set)
-            print(out)
-            if out==False:
-               return redirect('/invalid')
-            hash_set.clear()
       
-      return redirect('/exe')
+      #print(hash_set)
+      hash_len=200
+      tx_list=[]
+      log=open("log.txt","a")
+      if len(hash_set)>hash_len:
+         hash_list=[hash_set[i:i+hash_len] for i in range(0, len(hash_set), hash_len)]
+         log.write(str(hash_list)+'\n')
+         #print(hash_list)
+         for i in hash_list:
+            out=tx.tx_create(i)
+            if out==False:
+               return redirect('/invalid')
+            else: tx_list.append(out)
+            print(out)
+            sleep(1)
+      else:
+         #print(hash_set)
+         log.write(str(hash_set)+'\n')
+         out=tx.tx_create(hash_set)
+         print(out)
+         if out==False:
+            return redirect('/invalid')
+         else: tx_list.append(out)
+         hash_set.clear()
+      log.close()
+      return {"Executed": tx_list}
 
 if __name__ == '__main__':
    app.run(debug = True)
