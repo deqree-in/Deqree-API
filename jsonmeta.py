@@ -1,6 +1,5 @@
 import json
 import copy
-from user import UserModel
 from flask_jwt import current_identity
 
 root={
@@ -16,8 +15,14 @@ def convert(hash_set):
     c.close()
     
     issuer=current_identity.username
-    print(issuer)
-    metadata['40001']['string']=issuer
+    #print(issuer)
+    
+    issue={
+        "k": {"string": "issuer"},
+        "v": {"string": issuer}
+      }
+    
+    metadata['40001']['map'].append(issue)
 
     for hash in hash_set:
       uid+=1
