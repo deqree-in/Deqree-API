@@ -6,7 +6,7 @@ import requests
 import json
 import jsonmeta as jm
 
-with open('payload.json') as f:
+with open('logs/payload.json') as f:
     payload= json.load(f)
 
 wal_id='e7a99b9a9ad2743fa34074d1ef5a139776437a43'

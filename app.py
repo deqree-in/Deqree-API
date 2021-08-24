@@ -19,7 +19,7 @@ ALLOWED_EXTENSIONS = {'pdf'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['JWT_AUTH_URL_RULE'] = '/api/login'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///logs/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.secret_key = "aslkfhlsakdfjhlsakf"
@@ -39,21 +39,10 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/api/upload')
-def index():
-    return render_template('index.html')
-
-@app.route('/api/verify')
-def verify():
-   return render_template('verifier.html')
-
 @app.route('/invalid')
 def inv():
    return 'Invalid input. Upload only .pdf certificates.'
 
-@app.route('/exe')
-def e():
-   return 'Transaction executed.'
 
 @app.route('/api/verifier', methods = ['POST'])
 def verify_file():
@@ -94,7 +83,7 @@ def upload_file():
       #issuer=current_identity
       hash_len=100
       tx_list=[]
-      log=open("log.txt","a")
+      log=open("logs/log.txt","a")
       if len(hash_set)>hash_len:
          hash_list=[hash_set[i:i+hash_len] for i in range(0, len(hash_set), hash_len)]
          log.write(str(hash_list)+'\n')

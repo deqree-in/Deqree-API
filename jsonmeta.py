@@ -9,9 +9,9 @@ root={
       }
 
 def convert(hash_set):
-    with open('metadata.json') as f:
+    with open('logs/metadata.json') as f:
         metadata= json.load(f)
-    c= open('uid_count.txt','r')
+    c= open('logs/uid_count.txt','r')
     uid=int(c.read())
     c.close()
     
@@ -26,7 +26,7 @@ def convert(hash_set):
       base['v']['string']=hash
       metadata['40001']['map'].append(base)
 
-    c= open('uid_count.txt','w')
+    c= open('logs/uid_count.txt','w')
     c.write(str(uid))
     c.close()
     
