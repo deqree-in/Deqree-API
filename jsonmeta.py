@@ -15,8 +15,8 @@ def convert(hash_set):
     uid=int(c.read())
     c.close()
     
-    issuer=current_identity
-    print(issuer.username)
+    issuer=current_identity.username
+    print(issuer)
     metadata['40001']['string']=issuer
 
     for hash in hash_set:
