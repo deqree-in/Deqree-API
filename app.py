@@ -1,22 +1,15 @@
 from flask import Flask, render_template, request, redirect, flash
 from flask_cors import CORS
+from flask_restful import Api
 from werkzeug.utils import secure_filename
+from flask_jwt import JWT, jwt_required, current_identity
+from security import authenticate, identity, sha256
+from user import UserRegister
 from blockf import get_info
 from time import sleep
 import os
-import hashlib
 import tx_script as tx
 
-def sha256(filename):
-    BUF_SIZE = 65536  # read stuff in 64kb chunks!
-    sha256 = hashlib.sha256()
-    with open(filename, 'rb') as f:
-        while True:
-            data = f.read(BUF_SIZE)
-            if not data:
-                break
-            sha256.update(data)
-    return sha256.hexdigest()
 
 app = Flask(__name__)
 CORS(app)
@@ -24,18 +17,33 @@ CORS(app)
 UPLOAD_FOLDER = 'uploader'
 ALLOWED_EXTENSIONS = {'pdf'}
 
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['JWT_AUTH_URL_RULE'] = '/api/login'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['PROPAGATE_EXCEPTIONS'] = True
+app.secret_key = "aslkfhlsakdfjhlsakf"
+api = Api(app)
+
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
+jwt=JWT(app,authenticate,identity)
+
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = "fjsadf"
 
-@app.route('/upload')
+@app.route('/api/upload')
 def index():
     return render_template('index.html')
 
-@app.route('/verify')
+@app.route('/api/verify')
 def verify():
    return render_template('verifier.html')
 
@@ -47,7 +55,7 @@ def inv():
 def e():
    return 'Transaction executed.'
 
-@app.route('/verifier', methods = ['POST'])
+@app.route('/api/verifier', methods = ['POST'])
 def verify_file():
    if request.method=='POST':
       if 'file' not in request.files:
@@ -63,7 +71,8 @@ def verify_file():
          return get_info(check)
       else: return "Not found"
 
-@app.route('/uploader', methods = ['POST'])
+@app.route('/api/uploader', methods = ['POST'])
+@jwt_required()
 def upload_file():
    if request.method == 'POST':
       if 'files[]' not in request.files:
@@ -82,7 +91,8 @@ def upload_file():
       else : return "Submit more than 10 files."
       
       #print(hash_set)
-      hash_len=200
+      #issuer=current_identity
+      hash_len=100
       tx_list=[]
       log=open("log.txt","a")
       if len(hash_set)>hash_len:
@@ -92,7 +102,7 @@ def upload_file():
          for i in hash_list:
             out=tx.tx_create(i)
             if out==False:
-               return redirect('/invalid')
+               return "Transaction failed."
             else: tx_list.append(out)
             print(out)
             sleep(1)
@@ -102,11 +112,16 @@ def upload_file():
          out=tx.tx_create(hash_set)
          print(out)
          if out==False:
-            return redirect('/invalid')
+            return "Transaction Failed."
          else: tx_list.append(out)
          hash_set.clear()
       log.close()
       return {"Executed": tx_list}
 
+api.add_resource(UserRegister, '/api/register')
+
+
 if __name__ == '__main__':
+   from db import db
+   db.init_app(app)
    app.run(debug = True)

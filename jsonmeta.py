@@ -1,5 +1,7 @@
 import json
 import copy
+from user import UserModel
+from flask_jwt import current_identity
 
 root={
         "k": {"int": 0},
@@ -13,12 +15,16 @@ def convert(hash_set):
     uid=int(c.read())
     c.close()
     
+    issuer=current_identity
+    print(issuer.username)
+    metadata['40001']['string']=issuer
+
     for hash in hash_set:
       uid+=1
       base=copy.deepcopy(root)
       base['k']["int"]=uid
       base['v']['string']=hash
-      metadata['30001']['map'].append(base)
+      metadata['40001']['map'].append(base)
 
     c= open('uid_count.txt','w')
     c.write(str(uid))
