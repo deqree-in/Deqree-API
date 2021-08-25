@@ -1,7 +1,6 @@
 #API Docs: https://input-output-hk.github.io/cardano-wallet/api/v2021-06-11/
 #Author: Advait Joglekar
 
-from flask.json import jsonify
 import requests
 import json
 import jsonmeta as jm

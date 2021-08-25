@@ -14,7 +14,7 @@ def get_info(value):
     n=len(j)
     for i in range(n):
         if value in j[i]['json_metadata'].values():
-            return {"True": j[i]['tx_hash']}
+            return {"True": j[i]['tx_hash'], "Issuer": j[i]['json_metadata']['issuer']}
     return "False"
     
 #print(get_info('01eb58709bc9bebf1b5f9ea347c599d52f84b407b3e4d1253a92ba49f84b40cb'))
