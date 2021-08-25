@@ -1,7 +1,7 @@
 import json
 import copy
 from flask_jwt_extended import get_jwt_identity
-from user import UserModel
+from user import User
 
 root={
         "k": {"int": 0},
@@ -15,8 +15,7 @@ def convert(hash_set):
     uid=int(c.read())
     c.close()
     
-    user=UserModel.find_by_id( get_jwt_identity())
-    issuer=user.username
+    issuer=User.get(get_jwt_identity())
     #print(issuer)
     
     issue={

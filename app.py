@@ -3,15 +3,16 @@ from flask_cors import CORS
 from flask_restful import Api
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import JWTManager, jwt_required
-from security import sha256
-from user import UserRegister, UserLogin, User, TokenRefresh
-from blockf import get_info
+from resources.security import sha256
+from resources.user import UserRegister, UserLogin, User, TokenRefresh
+from resources.blockf import get_info
 from time import sleep
 import os
 import tx_script as tx
 
 
 app = Flask(__name__)
+api = Api(app)
 CORS(app)
 
 UPLOAD_FOLDER = 'uploader'
@@ -22,8 +23,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///logs/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
-app.secret_key = "aslkfhlsakdfjhlsakf"
-api = Api(app)
+app.secret_key = "bruh"
 
 
 @app.before_first_request
@@ -73,14 +73,10 @@ def token_not_fresh_callback():
 
 # JWT configuration ends
 
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-@app.route('/invalid')
-def inv():
-   return 'Invalid input. Upload only .pdf certificates.'
 
 
 @app.route('/api/verifier', methods = ['POST'])
@@ -99,13 +95,14 @@ def verify_file():
          return get_info(check)
       else: return "Not found"
 
+
 @app.route('/api/uploader', methods = ['POST'])
 @jwt_required()
 def upload_file():
    if request.method == 'POST':
       if 'files[]' not in request.files:
             flash('No file part')
-            return redirect('/invalid')
+            return {"message": "invalid" }
 
       files = request.files.getlist('files[]')
 
@@ -146,11 +143,12 @@ def upload_file():
       log.close()
       return {"Executed": tx_list}
 
+
 api.add_resource(UserRegister, '/api/register')
 api.add_resource(UserLogin, '/api/login')
 
 
 if __name__ == '__main__':
-   from db import db
+   from resources.db import db
    db.init_app(app)
    app.run(debug = True)

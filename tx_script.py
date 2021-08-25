@@ -3,7 +3,7 @@
 
 import requests
 import json
-import jsonmeta as jm
+import resources.jsonmeta as jm
 
 with open('logs/payload.json') as f:
     payload= json.load(f)
