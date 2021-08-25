@@ -84,7 +84,7 @@ def verify_file():
    if request.method=='POST':
       if 'file' not in request.files:
             flash('No file part')
-            return redirect('/invalid')
+            return {"message": "invalid"}
       
       file=request.files['file']
       if file and allowed_file(file.filename):
@@ -116,7 +116,6 @@ def upload_file():
       else : return "Submit more than 10 files."
       
       #print(hash_set)
-      #issuer=current_identity
       hash_len=100
       tx_list=[]
       log=open("logs/log.txt","a")

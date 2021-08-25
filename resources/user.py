@@ -6,7 +6,7 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required
     )
-from db import db
+from resources.db import db
 
 
 _user_parser = reqparse.RequestParser()
