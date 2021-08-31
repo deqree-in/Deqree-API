@@ -2,9 +2,13 @@ from flask import Flask, redirect, request, flash, jsonify
 from flask_cors import CORS
 from flask_restful import Api
 from werkzeug.utils import secure_filename
-from flask_jwt_extended import JWTManager, jwt_required
+from flask_jwt_extended import (
+    JWTManager, jwt_required, set_access_cookies,
+    create_access_token, get_jwt, get_jwt_identity )
+from datetime import datetime, timedelta, timezone
 from resources.security import sha256
-from resources.user import UserRegister, UserLogin, User, TokenRefresh
+from resources.user import BLOCKLIST
+from resources.user import UserLogout, UserRegister, UserLogin
 from resources.blockf import get_info
 from time import sleep
 import os
@@ -30,6 +34,19 @@ app.secret_key = "bruh"
 def create_tables():
     db.create_all()
 
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original respone
+        return response
 
 jwt=JWTManager(app)
 
@@ -39,9 +56,15 @@ def add_claims_to_jwt(identity):
         return {'is_admin': True}
     return {'is_admin': False}
 
+# This method will check if a token is blacklisted, and will be called automatically when blacklist is enabled
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blocklist(jwt_header, jwt_payload):
+    return jwt_payload['jti'] in BLOCKLIST
+
+
 # The following callbacks are used for customizing jwt response/error messages.
 @jwt.expired_token_loader
-def expired_token_callback():
+def expired_token_callback(jwt_header, jwt_payload):
     return jsonify({
         'message': 'The token has expired.',
         'error': 'token_expired'
@@ -116,7 +139,7 @@ def upload_file():
       else : return "Submit more than 10 files."
       
       #print(hash_set)
-      hash_len=100
+      hash_len=100                  #Max Number of files per tx
       tx_list=[]
       log=open("logs/log.txt","a")
       if len(hash_set)>hash_len:
@@ -145,6 +168,7 @@ def upload_file():
 
 api.add_resource(UserRegister, '/api/register')
 api.add_resource(UserLogin, '/api/login')
+api.add_resource(UserLogout, '/api/logout')
 
 
 if __name__ == '__main__':
