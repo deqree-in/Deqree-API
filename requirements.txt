@@ -1,6 +1,8 @@
 werkzeug
 requests
+bcrypt
 Flask
+Flask_SQLAlchemy
 Flask-JWT-Extended
 Flask-RESTFUL
 Flask-CORS
