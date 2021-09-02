@@ -1,5 +1,5 @@
 __pycache__
 .metals
 .vscode
-logs/data.db
-logs/log.txt
+data.db
+log.txt

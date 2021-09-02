@@ -1,12 +1,7 @@
-import hashlib
+from simple_file_checksum import get_checksum
 
-def sha256(filename):
-    BUF_SIZE = 65536  # read stuff in 64kb chunks!
-    sha256 = hashlib.sha256()
-    with open(filename, 'rb') as f:
-        while True:
-            data = f.read(BUF_SIZE)
-            if not data:
-                break
-            sha256.update(data)
-    return sha256.hexdigest()
+def hash_gen(file_set:list, folder:str):
+    hash_set=list()
+    for filename in file_set:
+            hash_set.append(get_checksum(folder+'/issue/'+filename,algorithm="SHA256"))
+    return hash_set

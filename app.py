@@ -6,7 +6,8 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, set_access_cookies,
     create_access_token, get_jwt, get_jwt_identity )
 from datetime import datetime, timedelta, timezone
-from resources.security import sha256
+from simple_file_checksum import get_checksum
+from resources.security import hash_gen
 from resources.user import BLOCKLIST
 from resources.user import UserLogout, UserRegister, UserLogin
 from resources.blockf import get_info
@@ -52,7 +53,7 @@ jwt=JWTManager(app)
 
 @jwt.additional_claims_loader
 def add_claims_to_jwt(identity):
-    if identity == 1:   # instead of hard-coding, we should read from a config file to get a list of admins instead
+    if identity == 1:   # we should read from a config file to get a list of admins instead
         return {'is_admin': True}
     return {'is_admin': False}
 
@@ -113,7 +114,7 @@ def verify_file():
       if file and allowed_file(file.filename):
          filename = secure_filename(file.filename)
          file.save(os.path.join(app.config['UPLOAD_FOLDER']+'/verify', filename))
-         check=sha256(UPLOAD_FOLDER+'/verify/'+filename)
+         check=get_checksum(UPLOAD_FOLDER+'/verify/'+filename,algorithm="SHA256")
          print(check)
          return get_info(check)
       else: return "Not found"
@@ -121,7 +122,7 @@ def verify_file():
 
 @app.route('/api/uploader', methods = ['POST'])
 @jwt_required()
-def upload_file():
+async def upload_file():
    if request.method == 'POST':
       if 'files[]' not in request.files:
             flash('No file part')
@@ -130,37 +131,42 @@ def upload_file():
       files = request.files.getlist('files[]')
 
       if len(files)>9:
-         hash_set=[]
-         for file in files:
+        hash_set=list()
+        file_set=list()
+        for file in files:
             if file and allowed_file(file.filename):
                filename = secure_filename(file.filename)
                file.save(os.path.join(app.config['UPLOAD_FOLDER']+'/issue', filename))
-               hash_set.append(sha256(UPLOAD_FOLDER+'/issue/'+filename))
-      else : return "Submit more than 10 files."
+               file_set.append(filename)
+               #hash_set.append(sha256(UPLOAD_FOLDER+'/issue/'+filename))
+        hash_set= hash_gen(file_set,UPLOAD_FOLDER)
+        #print(hash_set)
+      else : return "Submit more than 10 files.", 406
       
-      #print(hash_set)
-      hash_len=100                  #Max Number of files per tx
+      hash_len=200                  #Max Number of files per tx
       tx_list=[]
       log=open("logs/log.txt","a")
       if len(hash_set)>hash_len:
          hash_list=[hash_set[i:i+hash_len] for i in range(0, len(hash_set), hash_len)]
-         log.write(str(hash_list)+'\n')
          #print(hash_list)
          for i in hash_list:
-            out=tx.tx_create(i)
+            out= await tx.tx_create(i)
             if out==False:
-               return "Transaction failed."
-            else: tx_list.append(out)
-            print(out)
-            sleep(1)
+               return "Transaction failed.", 503
+            else:
+                tx_list.append(out)
+                log.write(str(out)+'\n')
+            #print(out)
+            sleep(3)
       else:
          #print(hash_set)
-         log.write(str(hash_set)+'\n')
-         out=tx.tx_create(hash_set)
+         out= await tx.tx_create(hash_set)
          print(out)
          if out==False:
             return "Transaction Failed."
-         else: tx_list.append(out)
+         else: 
+             tx_list.append(out)
+             log.write(str(out)+'\n')
          hash_set.clear()
       log.close()
       return {"Executed": tx_list}

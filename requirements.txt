@@ -1,4 +1,7 @@
+werkzeug
+requests
 Flask
 Flask-JWT-Extended
 Flask-RESTFUL
 Flask-CORS
+simple-file-checksum
