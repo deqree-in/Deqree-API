@@ -163,7 +163,7 @@ async def upload_file():
          out= await tx.tx_create(hash_set)
          print(out)
          if out==False:
-            return "Transaction Failed."
+            return "Transaction Failed.", 503
          else: 
              tx_list.append(out)
              log.write(str(out)+'\n')
