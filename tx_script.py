@@ -1,4 +1,4 @@
-#API Docs: https://input-output-hk.github.io/cardano-wallet/api/v2021-06-11/
+#API Docs: https://input-output-hk.github.io/cardano-wallet/api
 #Author: Advait Joglekar
 
 import asyncio

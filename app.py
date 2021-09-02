@@ -6,8 +6,7 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, set_access_cookies,
     create_access_token, get_jwt, get_jwt_identity )
 from datetime import datetime, timedelta, timezone
-from simple_file_checksum import get_checksum
-from resources.security import hash_gen
+from resources.security import sha256, hash_gen
 from resources.user import BLOCKLIST
 from resources.user import UserLogout, UserRegister, UserLogin
 from resources.blockf import get_info
@@ -114,10 +113,10 @@ def verify_file():
       if file and allowed_file(file.filename):
          filename = secure_filename(file.filename)
          file.save(os.path.join(app.config['UPLOAD_FOLDER']+'/verify', filename))
-         check=get_checksum(UPLOAD_FOLDER+'/verify/'+filename,algorithm="SHA256")
+         check=sha256(UPLOAD_FOLDER+'/verify/'+filename)
          print(check)
          return get_info(check)
-      else: return "Not found"
+      else: return {"message": "Not found"}, 404
 
 
 @app.route('/api/uploader', methods = ['POST'])
@@ -131,17 +130,16 @@ async def upload_file():
       files = request.files.getlist('files[]')
 
       if len(files)>9:
-        hash_set=list()
         file_set=list()
         for file in files:
             if file and allowed_file(file.filename):
                filename = secure_filename(file.filename)
                file.save(os.path.join(app.config['UPLOAD_FOLDER']+'/issue', filename))
-               file_set.append(filename)
+               file_set.append(UPLOAD_FOLDER+'/issue/'+filename)
                #hash_set.append(sha256(UPLOAD_FOLDER+'/issue/'+filename))
-        hash_set= hash_gen(file_set,UPLOAD_FOLDER)
+        hash_set= hash_gen(file_set)
         #print(hash_set)
-      else : return "Submit more than 10 files.", 406
+      else : return {"message": "Submit more than 10 files"}, 406
       
       hash_len=200                  #Max Number of files per tx
       tx_list=[]
@@ -152,18 +150,18 @@ async def upload_file():
          for i in hash_list:
             out= await tx.tx_create(i)
             if out==False:
-               return "Transaction failed.", 503
+               return {"message": "Transaction failed"}, 503
             else:
                 tx_list.append(out)
                 log.write(str(out)+'\n')
-            #print(out)
-            sleep(3)
+            print(out)
+            #sleep(1)
       else:
          #print(hash_set)
          out= await tx.tx_create(hash_set)
          print(out)
          if out==False:
-            return "Transaction Failed.", 503
+            return {"message": "Transaction failed"}, 503
          else: 
              tx_list.append(out)
              log.write(str(out)+'\n')
